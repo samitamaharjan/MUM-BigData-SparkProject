@@ -1,0 +1,3 @@
+cat rat fat
+sat rat cat
+bat rat fat
