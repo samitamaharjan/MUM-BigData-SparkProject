@@ -43,7 +43,6 @@ object Bootstrap_v2 extends App {
     val sample = dataDF.sample(false, 0.25);
     
     var mapMean = HashMap.empty[String, Array[Double]]
-    
     val n = 5;
     for (a <- 1 to n) {
       val sample1 = sample.sample(true, 1);
@@ -51,12 +50,13 @@ object Bootstrap_v2 extends App {
       val sampleMean = sqlContext.sql("select concat(gender, \"-\",  survive) as category, avg(age) avg_age, stddev(age) std_dev_age from titanic1 group by gender, survive")
       // sampleMean.show()
       val outputList = sampleMean.collectAsList()
-      println(outputList.size())
+      
       for (i <- 0 to outputList.size() - 1) {
         val key = outputList.get(i).get(0).asInstanceOf[String]
         val avgValue = outputList.get(i).get(1).asInstanceOf[Double]
         val sdValue = outputList.get(i).get(2).asInstanceOf[Double]
         
+        // if key contains in map, add the mean and sd to the same elements otherwise create new key/value pair
         if (mapMean.contains(key)) {
           var arr = mapMean.get(key).get
           arr(0) += avgValue
@@ -72,6 +72,7 @@ object Bootstrap_v2 extends App {
       println("loop " + a + " of " + n)
       mapMean.foreach(x => println(x._1, x._2.mkString(",")))
     }
+    // take a average of final mean and sd values
    val totalMeanAndSD = mapMean.map(x => (x._1, 
        BigDecimal(x._2(0) / n).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
        BigDecimal(x._2(1)/ n).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble))
